@@ -1,0 +1,120 @@
+<?php
+
+declare(strict_types=1);
+
+namespace SnEGamer;
+
+use pocketmine\plugin\PluginBase;
+use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
+use SnEGamer\commands\FixCCommand;
+use SnEGamer\commands\FlyCCommand;
+use SnEGamer\commands\NickCCommand;
+use SnEGamer\commands\FeedCCommand;
+use SnEGamer\commands\HealCCommand;
+use SnEGamer\commands\TopCCommand;
+use SnEGamer\commands\FixAllCCommand;
+use SnEGamer\commands\ColorChatCCommand;
+use SnEGamer\commands\AntiAfkCCommand;
+use SnEGamer\commands\BackCCommand;
+use SnEGamer\commands\SuicideCCommand;
+use SnEGamer\commands\NearCCommand;
+use SnEGamer\commands\CondenseCCommand;
+use SnEGamer\commands\CompassCCommand;
+use SnEGamer\commands\ClearInvCCommand;
+use SnEGamer\commands\KitZeusC;
+use SnEGamer\commands\KitKronosC;
+use SnEGamer\commands\KitHadesC;
+use SnEGamer\commands\KitGodC;
+use SnEGamer\commands\KitDemigodC;
+use SnEGamer\commands\DemigodRank;
+use SnEGamer\commands\GodRank;
+use SnEGamer\commands\HadesRank;
+use SnEGamer\commands\KronosRank;
+use SnEGamer\commands\ZeusRank;
+use SnEGamer\libs\CortexPE\Commando\exception\HookAlreadyRegistered;
+use SnEGamer\libs\CortexPE\Commando\PacketHooker;
+use SnEGamer\commands\CommonSpawnerC;
+use SnEGamer\commands\UncommonSpawnerC;
+use SnEGamer\commands\RareSpawnerC;
+use SnEGamer\commands\EpicSpawnerC;
+use SnEGamer\Utilities\Utils;
+use pocketmine\item\Item;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
+use SnEGamer\EventListener;
+
+class Main extends PluginBase
+{
+
+    /**
+     * @var Main
+     */
+    public static $instance;
+
+    /**
+     * @throws HookAlreadyRegistered
+     */
+
+
+    public function onEnable(): void
+    {
+        self::$instance = $this;
+        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+
+        if (!PacketHooker::isRegistered()) PacketHooker::register($this);
+        $this->getServer()->getCommandMap()->register("fixc", new FixCCommand($this, "fixc", " "));
+        $this->getServer()->getCommandMap()->register("clearinvc", new ClearInvCCommand($this, "clearinvc", " "));
+        $this->getServer()->getCommandMap()->register("zeusc", new KitZeusc($this, "zeusc", " "));
+        $this->getServer()->getCommandMap()->register("kronosc", new KitKronosC($this, "kronosc", " "));
+        $this->getServer()->getCommandMap()->register("hadesc", new KitHadesC($this, "hadesc", " "));
+        $this->getServer()->getCommandMap()->register("godc", new KitGodC($this, "godc", " "));
+        $this->getServer()->getCommandMap()->register("demigodc", new KitDemigodC($this, "demigodc", " "));
+        $this->getServer()->getCommandMap()->register("compassc", new CompassCCommand($this, "compassc", " "));
+        $this->getServer()->getCommandMap()->register("condensec", new CondenseCCommand($this, "condensec", " "));
+        $this->getServer()->getCommandMap()->register("suicidec", new SuicideCCommand($this, "suicidec", " "));
+        $this->getServer()->getCommandMap()->register("nearc", new NearCCommand($this, "nearc", " "));
+        $this->getServer()->getCommandMap()->register("backc", new BackCCommand($this, "backc", " "));
+        $this->getServer()->getCommandMap()->register("colorchatc", new ColorChatCCommand($this, "colorchatc", " "));
+        $this->getServer()->getCommandMap()->register("antiafkc", new AntiAfkCCommand($this, "antiafkc", " "));
+        $this->getServer()->getCommandMap()->register("flyc", new FlyCCommand($this, "flyc", " "));
+        $this->getServer()->getCommandMap()->register("fixallc", new FixAllCCommand($this, "fixallc", " "));
+        $this->getServer()->getCommandMap()->register("topc", new TopCCommand($this, "topc", " "));
+        $this->getServer()->getCommandMap()->register("nickc", new NickCCommand($this, "nickc", " "));
+        $this->getServer()->getCommandMap()->register("feedc", new FeedCCommand($this, "feedc", " "));
+        $this->getServer()->getCommandMap()->register("healc", new HealCCommand($this, "healc", " "));
+        $this->getServer()->getCommandMap()->register("demigodrc", new DemigodRank($this, "demigodrc", " "));
+        $this->getServer()->getCommandMap()->register("godrc", new GodRank($this, "godrc", " "));
+        $this->getServer()->getCommandMap()->register("hadesrc", new HadesRank($this, "hadesrc", " "));
+        $this->getServer()->getCommandMap()->register("kronosrc", new KronosRank($this, "kronosrc", " "));
+        $this->getServer()->getCommandMap()->register("zeusrc", new ZeusRank($this, "zeusrv", " "));
+        $this->getServer()->getCommandMap()->register("commonsc", new CommonSpawnerC($this, "commonsc", " "));
+        $this->getServer()->getCommandMap()->register("uncommonsc", new UncommonSpawnerC($this, "uncommonsc", " "));
+        $this->getServer()->getCommandMap()->register("raresc", new RareSpawnerC($this, "raresc", " "));
+        $this->getServer()->getCommandMap()->register("epicsc", new EpicSpawnerC($this, "epicsc", " "));
+    }
+
+    public static function getInstance(): Main
+    {
+        return self::$instance;
+    }
+
+    public function getSpawner(string $name, int $amount): Item
+    {
+        $name = strtolower($name);
+        $name = str_replace(" ", "", $name);
+        $entityID = Utils::getEntityIDFromName($name);
+
+        $nbt = new CompoundTag("", [
+            new IntTag("EntityID", (int)$entityID)
+        ]);
+
+        $spawner = Item::get(Item::MOB_SPAWNER, 0, $amount, $nbt);
+        $spawnerName = Utils::getEntityNameFromID((int)$entityID) . " Spawner";
+        $spawner->setCustomName(TextFormat::RESET . $spawnerName);
+
+        return $spawner;
+    }
+}
