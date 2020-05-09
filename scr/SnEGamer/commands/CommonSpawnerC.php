@@ -42,7 +42,7 @@ class CommonSpawnerC extends BaseCommand
                 $target = \pocketmine\Server::getInstance()->getPlayer($player);
                 if ($target instanceof Player) {
                     $item = Item::get(Item::CHEST);
-                    $item->setCustomName(TextFormat::BOLD . TextFormat::GREEN . "Common Spawner" . TextFormat::BOLD . TextFormat::WHITE . " Crate");
+                    $item->setCustomName(TextFormat::BOLD . TextFormat::GREEN . "Common Spawners" . TextFormat::BOLD . TextFormat::WHITE . " Crate");
                     $lore = [
                         TextFormat::GRAY . "Right-Click to open this crate to",
                         TextFormat::GRAY . "get its rewards!",
